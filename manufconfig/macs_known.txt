@@ -1,0 +1,26 @@
+
+18:e2:c2:3d:fd:9c	NIM_Tab    
+00:1f:5b:b9:65:d5	NIM_Mac    
+f0:25:b7:61:f9:95	NIM_Sam    
+d8:3c:69:c1:88:81	NIM_Wiko   
+6c:71:d9:4b:75:f1	NEMA_Yogi
+28:fa:a0:c7:6b:80	NIM_Vivo
+f0:6b:ca:2a:00:14	TOM_TabS8  
+08:ec:a9:ce:83:b0	TOM_TabS9  
+04:0c:ce:dd:e9:f2	TOM_Air
+f4:09:d8:78:fc:7e	TOM_Alpha
+50:cc:f8:2a:f7:0e	TOM_Sam
+50:46:5d:1a:b5:c7	NEMA_Nexus
+4c:a5:6d:2e:03:d5	NEMA_Sam
+2c:5b:b8:72:9d:fb	MINT_Shang
+44:6d:6c:32:8c:19	MINT_Sam
+44:91:db:c5:76:25	MINT_Sam
+b8:d6:d9:c7:ac:bf	MINT_New
+c4:42:02:cb:5e:83   MINT_Shang
+c4:27:95:b8:c7:44	INF_Accp1   
+c4:27:95:21:3a:e8	INF_Accp2   
+6c:ad:f8:54:7e:98	INF_ChrCst 
+bc:8c:cd:f9:1d:dd	INF_SamTv
+01:00:5e:00:00:01	IPv4Multi    
+ff:ff:ff:ff:ff:ff	Broadcast
+ec:9b:f3:26:30:2f   NOINA_Sam
