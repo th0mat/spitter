@@ -24,6 +24,8 @@ void dbLogPeriod(const Summary&);
 // Todo: dbLogPkt
 void dbLogPacket(const Packet&);
 
+void errorLogPacket(const Packet&);
+
 char* timeStampFromPkt(const Packet&, char*);
 
 #endif //SPITTER_SPITUTILS_H

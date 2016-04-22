@@ -15,7 +15,6 @@
 
 void rawHandler(u_char *args, const pcap_pkthdr *header, const u_char *packet);
 
-
 struct StaData {
     int packets;
     int bytes;
@@ -23,15 +22,12 @@ struct StaData {
 };
 
 struct Summary {
-
-    long periodStart;
     int periodLength;
-    Summary(long, int, std::chrono::time_point<std::chrono::system_clock>);
+    Summary(int, std::chrono::time_point<std::chrono::system_clock>);
     StaData corrupted;
-    StaData valid;  // data and management frames
+    StaData valid;  // incl control frames (which are excluded in the STA numbers)
     std::string location;
     std::chrono::time_point<std::chrono::system_clock> periodEnd;
-    //~Summary() {std::cout << "\nobj destroyed: " << this->periodStart << std::endl;}
     std::map<long, StaData> stations;
 };
 
@@ -61,7 +57,6 @@ struct MacHeader {
     u_char sc[2];
 };
 
-// Todo: add timestamp from pcap header
 struct Packet {
     bool crc;
     long timeStampMicroSecs;  // in micorsec unix time

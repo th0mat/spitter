@@ -32,7 +32,7 @@ auto test = std::chrono::time_point<std::chrono::system_clock>() + std::chrono::
 
 // initialize with time(nullptr) to get full secs (no rounding)
 std::unique_ptr<Summary> current(
-        new Summary{time(nullptr), Config::get().periodLength, std::chrono::time_point<std::chrono::system_clock>() +
+        new Summary{Config::get().periodLength, std::chrono::time_point<std::chrono::system_clock>() +
                 std::chrono::seconds(time(nullptr) + Config::get().periodLength)});
 
 
@@ -48,8 +48,8 @@ namespace rt {
 }
 
 
-Summary::Summary(long start, int duration, std::chrono::time_point<std::chrono::system_clock> t_point) :
-        periodStart{start}, periodLength{duration}, periodEnd{t_point} {
+Summary::Summary(int duration, std::chrono::time_point<std::chrono::system_clock> t_point) :
+        periodLength{duration}, periodEnd{t_point} {
     location = Config::get().location;
 }
 
@@ -70,7 +70,6 @@ void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
     addToSummary(pkt);
     pktHandler(pkt);
 }
-
 
 int startSpitting() {
     pcap_t* handle;                        // session handle
@@ -107,7 +106,7 @@ int startSpitting() {
         printf("failed to install filter %s: %s\n", Config::get().bpf.c_str(), pcap_geterr(handle));
         return (2);
     }
-    // Todo: move to sessions or config
+    // Todo: move to sessions or config -> together with json config
     dbLogSession();
     pcap_loop(handle, Config::get().maxPkts, rawHandler, nullptr);        // -1: no pkt number limit
     pcap_close(handle);
@@ -143,7 +142,6 @@ void checkPeriod(const pcap_pkthdr* header) {
         current->periodEnd = current->periodEnd + std::chrono::seconds(Config::get().periodLength);
     }
 }
-
 
 namespace PktTypes {
     // if type == 00
@@ -209,15 +207,14 @@ long getStaAddr(const Packet& pkt) {
     if (pkt.macHeader.type == 0) { no = PktTypes::t0[pkt.macHeader.subtype]; }
     // if (pkt.macHeader.type == 1) { no = PktTypes::t1[pkt.macHeader.subtype]; } // excluded already
     if (pkt.macHeader.type == 2) { no = PktTypes::t2[pkt.macHeader.toFromDs]; }
-    // Todo: undefined return
     if (no == 0) {
-        std::cout << "StaAddr fail: " << pkt.macHeader.type << "/" << pkt.macHeader.subtype << std::endl;
+        errorLogPacket(pkt);
         return 666;
 
     };   // for "undefined";
     if (no == 1) return addressToLong(pkt.macHeader.addr1);
     if (no == 2) return addressToLong(pkt.macHeader.addr2);
-    std::cout << "StaAddr fail: " << pkt.macHeader.type << "/" << pkt.macHeader.subtype << std::endl;
+    errorLogPacket(pkt);
     return 666;
 }
 

@@ -59,16 +59,16 @@ void screenPrintPacket(const Packet& pkt) {
     char tmp[50];
     char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    //Todo: pull addr1 - 3 resolution into function
     std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
     std::string addr2{"n/a"};
     if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
     std::string addr3{"n/a"};
     if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
-    printf("[%8d] %s | %5d bytes | %1d prot | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+    printf("[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
            macPktLength,
-           pkt.macHeader.protocol,
            pkt.macHeader.type,
            pkt.macHeader.subtype,
            pkt.macHeader.toFromDs,
@@ -80,7 +80,7 @@ void screenPrintPacket(const Packet& pkt) {
 }
 
 void txtLogPeriodDetails(const Summary& summary) {
-    std::ofstream ofs{"./manufconfig/period_details_log.txt", std::ofstream::app};
+    std::ofstream ofs{"./period_details.log", std::ofstream::app};
     char timeStamp[100];
     char buffer[100];
     time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
@@ -100,7 +100,7 @@ void txtLogPeriodDetails(const Summary& summary) {
 }
 
 void txtLogPeriodHeader(const Summary& summary) {
-    std::ofstream ofs ("./period_headers_log.txt", std::ofstream::out | std::ofstream::app);
+    std::ofstream ofs ("./period_headers.log", std::ofstream::out | std::ofstream::app);
     if (!ofs.is_open()) {
         std::cout << "*** could not open log_file";
         std::exit(-2);
@@ -123,25 +123,22 @@ void txtLogPeriodHeader(const Summary& summary) {
     ofs.close();
 }
 
-
 void txtLogPacket(const Packet& pkt) {
-    std::ofstream ofs{"./manufconfig/packets_log.txt", std::ofstream::app};
-    char buffer[100];
+    std::ofstream ofs{"./packets.log", std::ofstream::app};
+    char buffer[300];
+    char tmp[50];
     static int runningNo = 0;
-    char timeStamp[100];
-    auto t = time(nullptr);
+    char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
     std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
     std::string addr2{"n/a"};
     if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
     std::string addr3{"n/a"};
     if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
-    std::strftime(timeStamp, sizeof(timeStamp), "%Y%m%d %H:%M.%S", std::localtime(&t));
-    sprintf(buffer, "[%8d] %s | %5d bytes | %1d prot | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+    sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
            macPktLength,
-           pkt.macHeader.protocol,
            pkt.macHeader.type,
            pkt.macHeader.subtype,
            pkt.macHeader.toFromDs,
@@ -149,7 +146,34 @@ void txtLogPacket(const Packet& pkt) {
            addr2.c_str(),
            addr3.c_str()
     );
-    ofs << "whatever  "; //buffer;
+    ofs << buffer;
+    ofs.close();
+    runningNo++;
+}
+void errorLogPacket(const Packet& pkt) {
+    std::ofstream ofs{"./error.log", std::ofstream::app};
+    char buffer[300];
+    char tmp[50];
+    static int runningNo = 0;
+    char* timeStamp = timeStampFromPkt(pkt, tmp);
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
+    std::string addr2{"n/a"};
+    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
+    std::string addr3{"n/a"};
+    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
+    sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+            runningNo,
+            timeStamp,
+            macPktLength,
+            pkt.macHeader.type,
+            pkt.macHeader.subtype,
+            pkt.macHeader.toFromDs,
+            addr1.c_str(),
+            addr2.c_str(),
+            addr3.c_str()
+    );
+    ofs << buffer;
     ofs.close();
     runningNo++;
 }

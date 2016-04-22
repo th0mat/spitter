@@ -17,7 +17,7 @@ Config::Config(){
     device = "en0";
     bpf = "";
     currentSessionId = -1;
-    periodLength = 5;
+    periodLength = 60;
     maxPkts = 0;
     auto pwd = std::getenv("DBPWD");
     if (!pwd) {
@@ -27,8 +27,6 @@ Config::Config(){
     dbConnect = "dbname=test1 host=localhost user=postgres password='" +
             std::string(pwd) +
             "' hostaddr=127.0.0.1 port=5432";
-
-
 }
 
 
