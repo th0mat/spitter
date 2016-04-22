@@ -26,10 +26,11 @@ struct Summary {
 
     long periodStart;
     int periodLength;
+    Summary(long, int, std::chrono::time_point<std::chrono::system_clock>);
     StaData corrupted;
     StaData valid;  // data and management frames
     std::string location;
-    Summary(long, int);
+    std::chrono::time_point<std::chrono::system_clock> periodEnd;
     //~Summary() {std::cout << "\nobj destroyed: " << this->periodStart << std::endl;}
     std::map<long, StaData> stations;
 };
