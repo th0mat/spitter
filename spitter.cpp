@@ -13,19 +13,30 @@
 
 //SpitterConfig config{"en0", "", 5, 0, 100};
 
-bool crc32(const pcap_pkthdr *header, const u_char *packet);
-short getRadioTapLength(const u_char *packet);
-uint32_t crc32buf(char *buf, size_t len);
+bool crc32(const pcap_pkthdr* header, const u_char* packet);
+
+short getRadioTapLength(const u_char* packet);
+
+uint32_t crc32buf(char* buf, size_t len);
+
 void addToSummary(const Packet& pkt);
-void checkPeriod();
+
+void checkPeriod(const pcap_pkthdr*);
 
 
-void (*pktHandler)(const Packet&);
-void (*summaryHandler)(const Summary&);
-std::unique_ptr<Summary> current(new Summary{time(nullptr), Config::get().periodLength});
+void (* pktHandler)(const Packet&);
+
+void (* summaryHandler)(const Summary&);
+
+auto test = std::chrono::time_point<std::chrono::system_clock>() + std::chrono::seconds(time(nullptr) + Config::get().periodLength);
+
+// initialize with time(nullptr) to get full secs (no rounding)
+std::unique_ptr<Summary> current(
+        new Summary{time(nullptr), Config::get().periodLength, std::chrono::time_point<std::chrono::system_clock>() +
+                std::chrono::seconds(time(nullptr) + Config::get().periodLength)});
 
 
-void configHandlers(void (*p)(const Packet&), void (*s)(const Summary&)){
+void configHandlers(void (* p)(const Packet&), void (* s)(const Summary&)) {
     pktHandler = p;
     summaryHandler = s;
 }
@@ -37,33 +48,32 @@ namespace rt {
 }
 
 
-
-
-Summary::Summary(long start, int duration) : periodStart{start}, periodLength{duration} {
+Summary::Summary(long start, int duration, std::chrono::time_point<std::chrono::system_clock> t_point) :
+        periodStart{start}, periodLength{duration}, periodEnd{t_point} {
     location = Config::get().location;
 }
 
-StaData::StaData() : packets{0}, bytes{0} {};
+StaData::StaData() : packets{0}, bytes{0} { };
 
 /* loop callback function - set in pcap_loop() */
-void rawHandler(u_char *args, const pcap_pkthdr *header, const u_char *packet) {
+void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
     bool crc = crc32(header, packet);
-    long timeStampMicroSecs = header->ts.tv_sec*1000000 + header->ts.tv_usec;
+    long timeStampMicroSecs = header->ts.tv_sec * 1000000 + header->ts.tv_usec;
     int lengthInclRadioTap = header->len;
 
     const MacHeader* mac = reinterpret_cast<const MacHeader*>(packet +
-                                             getRadioTapLength(packet));
+                                                              getRadioTapLength(packet));
     const RadioTapHeader* radio = reinterpret_cast<const RadioTapHeader*>(packet);
     Packet pkt{crc, timeStampMicroSecs, lengthInclRadioTap, *radio, *mac};
 
-    checkPeriod();
+    checkPeriod(header);
     addToSummary(pkt);
     pktHandler(pkt);
 }
 
 
 int startSpitting() {
-    pcap_t *handle;                        // session handle
+    pcap_t* handle;                        // session handle
     char errbuf[PCAP_ERRBUF_SIZE];         // buff for error string
     struct bpf_program fp;                 // compiled filter
     //bpf_u_int32 mask;					   // netmask mask - not set
@@ -104,35 +114,35 @@ int startSpitting() {
     return (0);
 }
 
-bool crc32(const pcap_pkthdr *header, const u_char *packet) {
+bool crc32(const pcap_pkthdr* header, const u_char* packet) {
     if (header->caplen < 39) return false;        // min 14 for pkt and 25 for radiotap
     u_short radio = getRadioTapLength(packet);
     if (radio > rt::MAX_RADIOTAP_LENGTH || radio < rt::MIN_RADIOTAP_LENGTH) return false;
     if ((header->caplen - radio) < rt::MIN_MAC_LENGTH) return false;
-    u_char *tmp = const_cast<u_char *>(packet);  // crc32buf expects non-const
-    char *tmp2 = reinterpret_cast<char *>(tmp);  // can't go from u_char* directly to *int
+    u_char* tmp = const_cast<u_char*>(packet);  // crc32buf expects non-const
+    char* tmp2 = reinterpret_cast<char*>(tmp);  // can't go from u_char* directly to *int
     // and need unsigned int (= return val
     // of crc32buf)
-    int *present = reinterpret_cast<int *>(tmp2 + header->caplen - 4);
+    int* present = reinterpret_cast<int*>(tmp2 + header->caplen - 4);
     int calculated = crc32buf(tmp2 + radio, header->caplen - radio - 4);
     return calculated == *present;
 }
 
-short getRadioTapLength(const u_char *packet) {
-    const RadioTapHeader *rth = reinterpret_cast<const RadioTapHeader *>(packet);
+short getRadioTapLength(const u_char* packet) {
+    const RadioTapHeader* rth = reinterpret_cast<const RadioTapHeader*>(packet);
     const u_short result = rth->length;
     return result;
 }
 
-void checkPeriod() {
-    static time_t tmp = current->periodStart;
-    time_t nowTime = time(nullptr);
-    if ((nowTime - current->periodStart) > Config::get().periodLength) {
+void checkPeriod(const pcap_pkthdr* header) {
+    auto nowTime = std::chrono::time_point<std::chrono::system_clock>() +
+                   std::chrono::microseconds(header->ts.tv_usec + header->ts.tv_sec * 1000000);
+    if (nowTime >= current->periodEnd) {
         summaryHandler(*current);
         // Todo: period jump defense
-        tmp = tmp + Config::get().periodLength;
-        current = std::unique_ptr<Summary>(new Summary{tmp, Config::get().periodLength});
-    }}
+        current->periodEnd = current->periodEnd + std::chrono::seconds(Config::get().periodLength);
+    }
+}
 
 
 namespace PktTypes {
@@ -185,7 +195,7 @@ namespace PktTypes {
 };
 
 
-long addressToLong(const u_char *p) {
+long addressToLong(const u_char* p) {
     u_char tmp[8]{};
     // leave tmp[6] and tmp[7] = 0;
     for (int i = 0; i < 6; i++) {
@@ -202,15 +212,14 @@ long getStaAddr(const Packet& pkt) {
     // Todo: undefined return
     if (no == 0) {
         std::cout << "StaAddr fail: " << pkt.macHeader.type << "/" << pkt.macHeader.subtype << std::endl;
-                return 666;
+        return 666;
 
-        };   // for "undefined";
+    };   // for "undefined";
     if (no == 1) return addressToLong(pkt.macHeader.addr1);
     if (no == 2) return addressToLong(pkt.macHeader.addr2);
     std::cout << "StaAddr fail: " << pkt.macHeader.type << "/" << pkt.macHeader.subtype << std::endl;
     return 666;
 }
-
 
 
 void addToSummary(const Packet& pkt) {
@@ -227,7 +236,7 @@ void addToSummary(const Packet& pkt) {
     if (pkt.macHeader.type == 2 && pkt.macHeader.toFromDs == 3) return; // exclude data frames not to/from STA
     long sta = getStaAddr(pkt);
     auto ptr = current->stations.find(sta);
-    if (ptr != current->stations.end()){
+    if (ptr != current->stations.end()) {
         ptr->second.packets += 1;
         ptr->second.bytes += pkt.lengthInclRadioTap;
         return;
@@ -293,10 +302,10 @@ static uint32_t crc_32_tab[] = { /* CRC polynomial 0xedb88320 */
         0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-uint32_t crc32buf(char *buf, size_t len) {
+uint32_t crc32buf(char* buf, size_t len) {
     uint32_t oldcrc32;
     oldcrc32 = 0xFFFFFFFF;
-    for ( ; len; --len, ++buf) {
+    for (; len; --len, ++buf) {
         oldcrc32 = UPDC32(*buf, oldcrc32);
     }
     return ~oldcrc32;

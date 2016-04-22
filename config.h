@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+// Todo: config file in json
+// Todo: dbase schema
 
 class Config{
 

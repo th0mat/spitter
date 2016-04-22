@@ -9,17 +9,17 @@
 
 
 void packetHandler(const Packet& pkt) {
-    if (pkt.crc) screenPrintPacket(pkt);
+    //if (pkt.crc) screenPrintPacket(pkt);
     //if (pkt.crc) txtLogPacket(pkt);
 };
 
 
 void summaryHandler(const Summary& summary) {
-    screenPrintPeriodHeader(summary);
+    //screenPrintPeriodHeader(summary);
+    screenPrintPeriodDetails(summary);
     //txtLogPeriodHeader(summary);
-    //wtf();
-
     //txtLogPeriodDetails(summary);
+    dbLogPeriod(summary);
 };
 
 

@@ -17,7 +17,7 @@ Config::Config(){
     device = "en0";
     bpf = "";
     currentSessionId = -1;
-    periodLength = 2;
+    periodLength = 5;
     maxPkts = 0;
     auto pwd = std::getenv("DBPWD");
     if (!pwd) {

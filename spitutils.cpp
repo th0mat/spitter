@@ -26,8 +26,8 @@ std::string longToHex(const long& mac64) {
 
 void screenPrintPeriodDetails(const Summary& summary) {
     char timeStamp[100];
-    auto t = time(nullptr);
-    std::strftime(timeStamp, sizeof(timeStamp), "%Y%m%d %H:%M.%S", std::localtime(&t));
+    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
         printf("%s ----  %-20s  KB/s: %8.2f\n",
                timeStamp,
@@ -40,8 +40,8 @@ void screenPrintPeriodDetails(const Summary& summary) {
 
 void screenPrintPeriodHeader(const Summary& summary) {
     char timeStamp[100];
-    auto t = time(nullptr);
-    std::strftime(timeStamp, sizeof(timeStamp), "%Y%m%d %H:%M.%S", std::localtime(&t));
+    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     printf("%s  %3d secs | %3d sta | val/s %8.2f pkts %8.2f kb | corr/s  %8.2f pkts %8.2f kb | %s\n",
            timeStamp,
            summary.periodLength,
@@ -83,8 +83,8 @@ void txtLogPeriodDetails(const Summary& summary) {
     std::ofstream ofs{"./manufconfig/period_details_log.txt", std::ofstream::app};
     char timeStamp[100];
     char buffer[100];
-    auto t = time(nullptr);
-    std::strftime(timeStamp, sizeof(timeStamp), "%Y%m%d %H:%M.%S", std::localtime(&t));
+    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
         sprintf(buffer, "%s %4d | %-12s | %s   %-15s | %9.3f \n",
                 timeStamp,
@@ -107,8 +107,8 @@ void txtLogPeriodHeader(const Summary& summary) {
     }
     char buffer[200];
     char timeStamp[100];
-    auto t = time(nullptr);
-    std::strftime(timeStamp, sizeof(timeStamp), "%Y%m%d %H:%M.%S", std::localtime(&t));
+    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     sprintf(buffer, "%s  %3d secs | %3d sta | valid: %8.2f pkt/s %8.2f kb/s | corr:  %8.2f pkt/s %8.2f kb/s | %s\n",
             timeStamp,
             summary.periodLength,
@@ -176,7 +176,7 @@ void dbLogPeriod(const Summary& summary) {
 
     pqxx::result r = work.prepared("periods")
                     (Config::get().currentSessionId)
-                    (summary.periodStart)
+                    (summary.periodEnd.time_since_epoch().count()/1000000)
                     (summary.valid.packets)
                     (summary.corrupted.packets)
                     (summary.valid.bytes)
