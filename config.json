@@ -1,0 +1,23 @@
+{
+  "config":
+  {
+    "location":         "home",
+    "device":           "en0",
+    "bpf":              "",
+    "currentSessionId": -1,
+    "periodLength":     5,
+    "maxPkts":          0
+  },
+
+
+   "db":
+  {
+    "dbname":           "test1",
+    "host":             "localhost",
+    "user":             "postgres",
+    "password":         "setInEnvVar DBPWD",
+    "hostaddr":         "127.0.0.1",
+    "port":             "5432",
+    "dbConnect":        "dbname=test1 host=localhost user=postgres password='xxxxxxxx' hostaddr=127.0.0.1 port=5432"
+  }
+}
