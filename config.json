@@ -4,7 +4,6 @@
     "location":         "home",
     "device":           "en0",
     "bpf":              "",
-    "currentSessionId": -1,
     "periodLength":     5,
     "maxPkts":          0
   },

@@ -13,3 +13,4 @@ add_executable(spitter ${SOURCE_FILES})
 
 configure_file(manufconfig/macs_all.txt manufconfig/macs_all.txt COPYONLY)
 configure_file(manufconfig/macs_known.txt manufconfig/macs_known.txt COPYONLY)
+configure_file(config.json config.json COPYONLY)

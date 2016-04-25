@@ -60,15 +60,17 @@ void screenPrintPacket(const Packet& pkt) {
     char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
     //Todo: pull addr1 - 3 resolution into function
+    //Todo: add length check for addr1
     std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
     std::string addr2{"n/a"};
     if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
     std::string addr3{"n/a"};
     if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
-    printf("[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+    printf("[%8d] %s | %5d bytes | %-5s | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
            macPktLength,
+           pkt.crc ? "valid" : "corr",
            pkt.macHeader.type,
            pkt.macHeader.subtype,
            pkt.macHeader.toFromDs,

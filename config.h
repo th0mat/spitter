@@ -7,8 +7,6 @@
 
 #include <iostream>
 
-// Todo: config file in json
-// Todo: dbase schema
 
 class Config{
 
@@ -19,7 +17,7 @@ public:
     std::string location;
     std::string device;
     std::string bpf;
-    long currentSessionId;
+    long currentSessionId; // not from config file
     int periodLength;
     long maxPkts;
     std::string dbConnect;

@@ -192,7 +192,6 @@ namespace PktTypes {
     const std::vector<int> t2{0, 2, 1, 0};
 };
 
-
 long addressToLong(const u_char* p) {
     u_char tmp[8]{};
     // leave tmp[6] and tmp[7] = 0;
@@ -217,7 +216,6 @@ long getStaAddr(const Packet& pkt) {
     errorLogPacket(pkt);
     return 666;
 }
-
 
 void addToSummary(const Packet& pkt) {
     // if corrupted, add to corrupted

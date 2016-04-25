@@ -9,16 +9,17 @@
 
 
 void packetHandler(const Packet& pkt) {
-    //if (pkt.crc) screenPrintPacket(pkt);
+    if (pkt.crc) screenPrintPacket(pkt);  // only valid packets
+    //screenPrintPacket(pkt);   // all packets incl corrupted
     if (pkt.crc) txtLogPacket(pkt);
 };
 
 void summaryHandler(const Summary& summary) {
-    screenPrintPeriodHeader(summary);
-    screenPrintPeriodDetails(summary);
-    txtLogPeriodHeader(summary);
-    txtLogPeriodDetails(summary);
-    //dbLogPeriod(summary);
+    //screenPrintPeriodHeader(summary);
+    //screenPrintPeriodDetails(summary);
+    //txtLogPeriodHeader(summary);
+    //txtLogPeriodDetails(summary);
+    dbLogPeriod(summary);
 };
 
 int main(int argc, char* argv[]) {
