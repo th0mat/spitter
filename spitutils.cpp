@@ -8,7 +8,7 @@
 #include <set>
 #include "spitter.h"
 #include "spitutils.h"
-#include "macmanuf.h"
+#include "oui_lookup/lookup.h"
 #include "config.h"
 
 using std::chrono::microseconds;
