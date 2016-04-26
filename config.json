@@ -1,21 +1,32 @@
 {
-  "config":
-  {
-    "location":         "home",
-    "device":           "en0",
-    "bpf":              "",
-    "periodLength":     5,
-    "maxPkts":          10000
+  "config": {
+    "location": "home",
+    "device": "en0",
+    "bpf": "",
+    "periodLength": 5,
+    "maxPkts": 0
   },
-
-
-   "db":
-  {
-    "dbname":           "test1",
-    "host":             "localhost",
-    "user":             "postgres",
-    "password":         "setInEnvVar DBPWD",
-    "hostaddr":         "127.0.0.1",
-    "port":             "5432"
+  "db": {
+    "dbname": "test1",
+    "host": "localhost",
+    "user": "postgres",
+    "password": "setInEnvVar DBPWD",
+    "hostaddr": "127.0.0.1",
+    "port": "5432"
+  },
+  "output": {
+    "screen": {
+      "packets": false,
+      "period_header": false,
+      "period_details": true
+    },
+    "txt_file": {
+      "packets": false,
+      "periods": false
+    },
+    "postgres": {
+      "packets": false,
+      "periods": true
+    }
   }
 }

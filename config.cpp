@@ -9,7 +9,6 @@
 std::string postgresConnectString(const boost::property_tree::ptree&);
 
 
-
 Config::Config() {
     const std::string configFileName = "config.json";
     boost::property_tree::ptree pt;
@@ -20,11 +19,20 @@ Config::Config() {
     periodLength = pt.get<int>("config.periodLength");
     maxPkts = pt.get<int>("config.maxPkts");
     dbConnect = postgresConnectString(pt);
+
+    outScrPkts = pt.get<bool>("output.screen.packets");
+    outScrPeriodHdr = pt.get<bool>("output.screen.period_header");
+    outScrPeriodDetails = pt.get<bool>("output.screen.period_details");
+    outTxtPkts = pt.get<bool>("output.txt_file.packets");
+    outTxtPeriods = pt.get<bool>("output.txt_file.packets");
+    outPgPkts = pt.get<bool>("output.postgres.packets");
+    outPgPeriods = pt.get<bool>("output.postgres.periods");
     currentSessionId = -1;
+
 }
 
 
-std::string postgresConnectString(const boost::property_tree::ptree& pt){
+std::string postgresConnectString(const boost::property_tree::ptree& pt) {
     std::string pgc{"dbname="};
     pgc += pt.get<std::string>("db.dbname");
     pgc += " host=";

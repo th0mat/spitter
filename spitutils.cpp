@@ -188,7 +188,7 @@ void dbLogPeriod(const Summary& summary) {
     pqxx::connection conn(Config::get().dbConnect.c_str());
     pqxx::work work(conn);
     conn.prepare("periods",
-                 "INSERT INTO periods (session_id, start_time, no_pkts_valid, no_pkts_corr, bytes_valid, bytes_corr, no_stations) "
+                 "INSERT INTO periods (session_id, end_time, no_pkts_valid, no_pkts_corr, bytes_valid, bytes_corr, no_stations) "
                          "VALUES ($1, to_timestamp($2), $3, $4, $5, $6, $7) RETURNING period_id;");
 
     pqxx::result r = work.prepared("periods")

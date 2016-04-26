@@ -21,6 +21,17 @@ public:
     int periodLength;
     long maxPkts;
     std::string dbConnect;
+
+    bool outScrPkts;
+    bool outScrPeriodHdr;
+    bool outScrPeriodDetails;
+    bool outTxtPkts;
+    bool outTxtPeriods;
+    bool outPgPkts;
+    bool outPgPeriods;
+
+
+
     static Config& get();
 
 
