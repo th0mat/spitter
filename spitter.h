@@ -61,6 +61,7 @@ struct Packet {
     bool crc;
     long timeStampMicroSecs;  // in micorsec unix time
     int lengthInclRadioTap;
+    // Todo: change to ptrs
     RadioTapHeader radioTapHeader;
     MacHeader macHeader;
 };
@@ -68,7 +69,7 @@ struct Packet {
 
 void configHandlers(void (*pktHandler)(const Packet&), void (*summaryHandler)(const Summary&));
 int startSpitting();
-
+long addressToLong(const u_char*);
 
 
 #endif //SPITTER_SPITTER_H

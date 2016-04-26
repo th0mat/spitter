@@ -5,7 +5,7 @@
     "device":           "en0",
     "bpf":              "",
     "periodLength":     5,
-    "maxPkts":          0
+    "maxPkts":          10000
   },
 
 
@@ -16,7 +16,6 @@
     "user":             "postgres",
     "password":         "setInEnvVar DBPWD",
     "hostaddr":         "127.0.0.1",
-    "port":             "5432",
-    "dbConnect":        "dbname=test1 host=localhost user=postgres password='xxxxxxxx' hostaddr=127.0.0.1 port=5432"
+    "port":             "5432"
   }
 }

@@ -2,13 +2,14 @@
 // Created by Thomas Natter on 3/23/16.
 //
 
-#include <fstream>      // std::ofstream
+#include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <set>
+#include "spitter.h"
 #include "spitutils.h"
 #include "macmanuf.h"
 #include "config.h"
-#include <pqxx/pqxx>
 
 using std::chrono::microseconds;
 using std::chrono::seconds;
@@ -16,13 +17,14 @@ using std::chrono::system_clock;
 typedef std::chrono::time_point<system_clock> t_point;
 
 
-
+void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::string& addr2, std::string& addr3);
 std::string longToHex(const long& mac64) {
     std::stringstream stream;
     stream << std::setfill('0') << std::setw(12) << std::hex << mac64;
     return stream.str();
 
 }
+void dbRegisterMacIfNew(const long);
 
 void screenPrintPeriodDetails(const Summary& summary) {
     char timeStamp[100];
@@ -59,13 +61,8 @@ void screenPrintPacket(const Packet& pkt) {
     char tmp[50];
     char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
-    //Todo: pull addr1 - 3 resolution into function
-    //Todo: add length check for addr1
-    std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
-    std::string addr2{"n/a"};
-    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
-    std::string addr3{"n/a"};
-    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
+    std::string addr1, addr2, addr3;
+    getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     printf("[%8d] %s | %5d bytes | %-5s | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
@@ -132,11 +129,8 @@ void txtLogPacket(const Packet& pkt) {
     static int runningNo = 0;
     char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
-    std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
-    std::string addr2{"n/a"};
-    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
-    std::string addr3{"n/a"};
-    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
+    std::string addr1, addr2, addr3;
+    getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
@@ -159,11 +153,8 @@ void errorLogPacket(const Packet& pkt) {
     static int runningNo = 0;
     char* timeStamp = timeStampFromPkt(pkt, tmp);
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
-    std::string addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));
-    std::string addr2{"n/a"};
-    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
-    std::string addr3{"n/a"};
-    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
+    std::string addr1, addr2, addr3;
+    getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
             runningNo,
             timeStamp,
@@ -215,6 +206,7 @@ void dbLogPeriod(const Summary& summary) {
             "VALUES ($1, $2, $3, $4, $5);");
 
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
+        dbRegisterMacIfNew(ptr->first);
         work.prepared("summaries")
                         (periodId)
                         (ptr->first)
@@ -224,6 +216,32 @@ void dbLogPeriod(const Summary& summary) {
                 .exec();
     }
 
+    work.commit();
+}
+
+
+bool recentlySeen(long mac){
+    static std::set<long> recent{};
+    if (recent.find(mac) != recent.end()) return true;
+    recent.insert(mac);
+    return false;
+}
+
+
+void dbRegisterMacIfNew(const long mac){
+    if (recentlySeen(mac)) return;
+    pqxx::connection conn(Config::get().dbConnect.c_str());
+    pqxx::work work(conn);
+    char hexmac[20];
+    sprintf(hexmac, "%012lX", mac);
+    conn.prepare("registerMac",
+                 "INSERT INTO macs (mac_int, mac_hex, mac_res) "
+                         "VALUES ($1, $2, $3) ON CONFLICT (mac_int) DO NOTHING;");
+    work.prepared("registerMac")
+                    (mac)
+                    (std::string(hexmac))
+                    (resolveMac(mac))
+            .exec();
     work.commit();
 }
 
@@ -243,4 +261,44 @@ char* timeStampFromPkt(const Packet& pkt, char* timeStamp){
     strcat(timeStamp, microStr.c_str());
     return timeStamp;
 
+}
+
+void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::string& addr2, std::string& addr3) {
+    addr1 = addr2 = addr3 = "-";
+    if (macPktLength >= 14) { addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));}
+    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2));}
+    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3));}
+}
+
+void dbLogPacket(const Packet& pkt){
+    pqxx::connection conn(Config::get().dbConnect.c_str());
+    pqxx::work work(conn);
+    long addr1{NULL}; long addr2{NULL}; long addr3{NULL};
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    double timeStamp = pkt.timeStampMicroSecs * 1.0 / 1000000;
+
+    if (pkt.crc){
+        if (macPktLength >= 14) {addr1 = addressToLong(pkt.macHeader.addr1); dbRegisterMacIfNew(addr1);}
+        if (macPktLength >= 20) {addr2 = addressToLong(pkt.macHeader.addr2); dbRegisterMacIfNew(addr1);}
+        if (macPktLength >= 26) {addr3 = addressToLong(pkt.macHeader.addr3); dbRegisterMacIfNew(addr1);}
+    }
+
+    conn.prepare("packet", "INSERT INTO packets (session_id, time_stamp, protocol, type, subtype, "
+            "to_from_ds, crc_valid, length, addr1, addr2, addr3, channel_freq) VALUES "
+            "($1, to_timestamp($2), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);");
+    work.prepared("packet")
+                    (Config::get().currentSessionId)
+                    (timeStamp)
+                    (pkt.macHeader.protocol)
+                    (pkt.macHeader.type)
+                    (pkt.macHeader.subtype)
+                    (pkt.macHeader.toFromDs)
+                    (pkt.crc)
+                    (pkt.lengthInclRadioTap)
+                    (addr1)
+                    (addr2)
+                    (addr3)
+                    (99)
+            .exec();
+    work.commit();
 }

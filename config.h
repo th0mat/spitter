@@ -6,7 +6,7 @@
 #define PCAP_CONFIG_H
 
 #include <iostream>
-
+#include <pqxx/pqxx>
 
 class Config{
 
@@ -22,6 +22,7 @@ public:
     long maxPkts;
     std::string dbConnect;
     static Config& get();
+
 
 };
 

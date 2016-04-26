@@ -11,7 +11,6 @@
 
 
 
-//SpitterConfig config{"en0", "", 5, 0, 100};
 
 bool crc32(const pcap_pkthdr* header, const u_char* packet);
 
@@ -28,9 +27,6 @@ void (* pktHandler)(const Packet&);
 
 void (* summaryHandler)(const Summary&);
 
-auto test = std::chrono::time_point<std::chrono::system_clock>() + std::chrono::seconds(time(nullptr) + Config::get().periodLength);
-
-// initialize with time(nullptr) to get full secs (no rounding)
 std::unique_ptr<Summary> current(
         new Summary{Config::get().periodLength, std::chrono::time_point<std::chrono::system_clock>() +
                 std::chrono::seconds(time(nullptr) + Config::get().periodLength)});
@@ -140,6 +136,10 @@ void checkPeriod(const pcap_pkthdr* header) {
         summaryHandler(*current);
         // Todo: period jump defense
         current->periodEnd = current->periodEnd + std::chrono::seconds(Config::get().periodLength);
+        current->stations.clear();
+        current->corrupted = StaData();
+        current->valid = StaData();
+
     }
 }
 
