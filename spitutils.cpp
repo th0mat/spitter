@@ -18,17 +18,19 @@ typedef std::chrono::time_point<system_clock> t_point;
 
 
 void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::string& addr2, std::string& addr3);
+
 std::string longToHex(const long& mac64) {
     std::stringstream stream;
     stream << std::setfill('0') << std::setw(12) << std::hex << mac64;
     return stream.str();
 
 }
+
 void dbRegisterMacIfNew(const long);
 
 void screenPrintPeriodDetails(const Summary& summary) {
     char timeStamp[100];
-    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
     std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
         printf("%s ----  %-20s  KB/s: %8.2f\n",
@@ -42,7 +44,7 @@ void screenPrintPeriodDetails(const Summary& summary) {
 
 void screenPrintPeriodHeader(const Summary& summary) {
     char timeStamp[100];
-    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
     std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     printf("%s  %3d secs | %3d sta | val/s %8.2f pkts %8.2f kb | corr/s  %8.2f pkts %8.2f kb | %s\n",
            timeStamp,
@@ -63,9 +65,10 @@ void screenPrintPacket(const Packet& pkt) {
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
     std::string addr1, addr2, addr3;
     getAddresses(pkt, macPktLength, addr1, addr2, addr3);
-    printf("[%8d] %s | %5d bytes | %-5s | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+    printf("[%8d] %s | %4d | %5d bytes | %-5s | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
+           pkt.radioTapHeader.channelFreq,
            macPktLength,
            pkt.crc ? "valid" : "corr",
            pkt.macHeader.type,
@@ -82,7 +85,7 @@ void txtLogPeriodDetails(const Summary& summary) {
     std::ofstream ofs{"./period_details.log", std::ofstream::app};
     char timeStamp[100];
     char buffer[100];
-    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
     std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
         sprintf(buffer, "%s %4d | %-12s | %s   %-15s | %9.3f \n",
@@ -99,14 +102,14 @@ void txtLogPeriodDetails(const Summary& summary) {
 }
 
 void txtLogPeriodHeader(const Summary& summary) {
-    std::ofstream ofs ("./period_headers.log", std::ofstream::out | std::ofstream::app);
+    std::ofstream ofs("./period_headers.log", std::ofstream::out | std::ofstream::app);
     if (!ofs.is_open()) {
         std::cout << "*** could not open log_file";
         std::exit(-2);
     }
     char buffer[200];
     char timeStamp[100];
-    time_t tt = summary.periodEnd.time_since_epoch().count()/1000000;
+    time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
     std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
     sprintf(buffer, "%s  %3d secs | %3d sta | valid: %8.2f pkt/s %8.2f kb/s | corr:  %8.2f pkt/s %8.2f kb/s | %s\n",
             timeStamp,
@@ -131,21 +134,23 @@ void txtLogPacket(const Packet& pkt) {
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
     std::string addr1, addr2, addr3;
     getAddresses(pkt, macPktLength, addr1, addr2, addr3);
-    sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
-           runningNo,
-           timeStamp,
-           macPktLength,
-           pkt.macHeader.type,
-           pkt.macHeader.subtype,
-           pkt.macHeader.toFromDs,
-           addr1.c_str(),
-           addr2.c_str(),
-           addr3.c_str()
+    sprintf(buffer, "[%8d] %s | %4d | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
+            runningNo,
+            timeStamp,
+            pkt.radioTapHeader.channelFreq,
+            macPktLength,
+            pkt.macHeader.type,
+            pkt.macHeader.subtype,
+            pkt.macHeader.toFromDs,
+            addr1.c_str(),
+            addr2.c_str(),
+            addr3.c_str()
     );
     ofs << buffer;
     ofs.close();
     runningNo++;
 }
+
 void errorLogPacket(const Packet& pkt) {
     std::ofstream ofs{"./error.log", std::ofstream::app};
     char buffer[300];
@@ -193,7 +198,7 @@ void dbLogPeriod(const Summary& summary) {
 
     pqxx::result r = work.prepared("periods")
                     (Config::get().currentSessionId)
-                    (summary.periodEnd.time_since_epoch().count()/1000000)
+                    (summary.periodEnd.time_since_epoch().count() / 1000000)
                     (summary.valid.packets)
                     (summary.corrupted.packets)
                     (summary.valid.bytes)
@@ -220,7 +225,7 @@ void dbLogPeriod(const Summary& summary) {
 }
 
 
-bool recentlySeen(long mac){
+bool recentlySeen(long mac) {
     static std::set<long> recent{};
     if (recent.find(mac) != recent.end()) return true;
     recent.insert(mac);
@@ -228,7 +233,7 @@ bool recentlySeen(long mac){
 }
 
 
-void dbRegisterMacIfNew(const long mac){
+void dbRegisterMacIfNew(const long mac) {
     if (recentlySeen(mac)) return;
     pqxx::connection conn(Config::get().dbConnect.c_str());
     pqxx::work work(conn);
@@ -245,7 +250,7 @@ void dbRegisterMacIfNew(const long mac){
     work.commit();
 }
 
-char* timeStampFromPkt(const Packet& pkt, char* timeStamp){
+char* timeStampFromPkt(const Packet& pkt, char* timeStamp) {
     t_point pkt_t_point = t_point();
     pkt_t_point = pkt_t_point + microseconds(pkt.timeStampMicroSecs);
     time_t tt = system_clock::to_time_t(pkt_t_point);
@@ -265,22 +270,33 @@ char* timeStampFromPkt(const Packet& pkt, char* timeStamp){
 
 void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::string& addr2, std::string& addr3) {
     addr1 = addr2 = addr3 = "-";
-    if (macPktLength >= 14) { addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1));}
-    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2));}
-    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3));}
+    if (macPktLength >= 14) { addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1)); }
+    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
+    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
 }
 
-void dbLogPacket(const Packet& pkt){
+void dbLogPacket(const Packet& pkt) {
     pqxx::connection conn(Config::get().dbConnect.c_str());
     pqxx::work work(conn);
-    long addr1{NULL}; long addr2{NULL}; long addr3{NULL};
+    long addr1{NULL};
+    long addr2{NULL};
+    long addr3{NULL};
     int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
     double timeStamp = pkt.timeStampMicroSecs * 1.0 / 1000000;
 
-    if (pkt.crc){
-        if (macPktLength >= 14) {addr1 = addressToLong(pkt.macHeader.addr1); dbRegisterMacIfNew(addr1);}
-        if (macPktLength >= 20) {addr2 = addressToLong(pkt.macHeader.addr2); dbRegisterMacIfNew(addr1);}
-        if (macPktLength >= 26) {addr3 = addressToLong(pkt.macHeader.addr3); dbRegisterMacIfNew(addr1);}
+    if (pkt.crc) {
+        if (macPktLength >= 14) {
+            addr1 = addressToLong(pkt.macHeader.addr1);
+            dbRegisterMacIfNew(addr1);
+        }
+        if (macPktLength >= 20) {
+            addr2 = addressToLong(pkt.macHeader.addr2);
+            dbRegisterMacIfNew(addr1);
+        }
+        if (macPktLength >= 26) {
+            addr3 = addressToLong(pkt.macHeader.addr3);
+            dbRegisterMacIfNew(addr1);
+        }
     }
 
     conn.prepare("packet", "INSERT INTO packets (session_id, time_stamp, protocol, type, subtype, "
@@ -298,7 +314,8 @@ void dbLogPacket(const Packet& pkt){
                     (addr1)
                     (addr2)
                     (addr3)
-                    (99)
+                    (pkt.radioTapHeader.channelFreq)
             .exec();
     work.commit();
 }
+

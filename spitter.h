@@ -36,7 +36,13 @@ struct RadioTapHeader {
     u_char version;    // set to 0
     u_char pad;
     u_short length;    // entire length
-    u_int present;     // fields present
+//    u_int present;     // fields present
+    unsigned firstFour: 4;  // must be all '1' for inBetween to be correct
+    unsigned restFlag: 28; // 28 + 64 + 8 + 8
+    u_int64_t tsft;
+    u_char flags;
+    u_char rate;
+    u_short channelFreq;
 };
 
 

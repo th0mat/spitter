@@ -16,17 +16,17 @@
   },
   "output": {
     "screen": {
-      "packets": false,
+      "packets": true,
       "period_header": false,
-      "period_details": true
+      "period_details": false
     },
     "txt_file": {
       "packets": false,
       "periods": false
     },
     "postgres": {
-      "packets": false,
-      "periods": true
+      "packets": true,
+      "periods": false
     }
   }
 }
