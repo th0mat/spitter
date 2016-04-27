@@ -21,7 +21,6 @@ void screenPrintPacket(const Packet&);
 
 void dbLogSession();
 void dbLogPeriod(const Summary&);
-// Todo: dbLogPkt
 void dbLogPacket(const Packet&);
 
 void errorLogPacket(const Packet&);
