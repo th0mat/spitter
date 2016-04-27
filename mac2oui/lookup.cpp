@@ -51,7 +51,7 @@ bool comp(const OuiRange& lhs, const OuiRange& rhs) {
 
 void MacLookup::populateAllOui() {
     const std::string hexOnly = "0123456789ABCDEFabcdef";
-    std::ifstream ifs{"./oui_lookup/oui_download.txt"};
+    std::ifstream ifs{"./mac2oui/oui_download.txt"};
     if (!ifs.is_open()) {
         std::cout << "*** txt file with oui not found";
         std::exit(-2);
@@ -79,7 +79,7 @@ MacLookup::MacLookup() {
 
 void MacLookup::populateTaggedMacs() {
     const std::string hexOnly = "0123456789ABCDEFabcdef";
-    std::ifstream ifs{"./oui_lookup/mac_config.txt"};
+    std::ifstream ifs{"./mac2oui/mac_config.txt"};
     if (!ifs.is_open()) std::cout << "*** txt file with known macs not found";
     std::stringstream ss;
     std::string line, mac, name;

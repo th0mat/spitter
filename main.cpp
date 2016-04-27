@@ -6,6 +6,7 @@
 #include "spitutils.h"
 #include "config.h"
 
+// output configuration
 
 void packetHandler(const Packet& pkt) {
     if (Config::get().outScrPkts && pkt.crc) screenPrintPacket(pkt);
@@ -22,6 +23,9 @@ void summaryHandler(const Summary& summary) {
     }
     if (Config::get().outPgPeriods) dbLogPeriod(summary);
 };
+
+
+// program start
 
 int main(int argc, char* argv[]) {
     configHandlers(packetHandler, summaryHandler);

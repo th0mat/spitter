@@ -39,6 +39,7 @@ struct RadioTapHeader {
     u_int present;     // fields present
 };
 
+
 struct MacHeader {
     unsigned protocol:2;
     unsigned type:2;

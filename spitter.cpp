@@ -102,8 +102,7 @@ int startSpitting() {
         printf("failed to install filter %s: %s\n", Config::get().bpf.c_str(), pcap_geterr(handle));
         return (2);
     }
-    // Todo: move to sessions or config -> together with json config
-    dbLogSession();
+    if (Config::get().outPgPeriods || Config::get().outPgPkts) dbLogSession();
     pcap_loop(handle, Config::get().maxPkts, rawHandler, nullptr);        // -1: no pkt number limit
     pcap_close(handle);
     return (0);
