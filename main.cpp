@@ -5,6 +5,7 @@
 #include "spitter.h"
 #include "spitutils.h"
 #include "config.h"
+#include <csignal>
 
 // output configuration
 
@@ -25,11 +26,20 @@ void summaryHandler(const Summary& summary) {
 };
 
 
-// program start
+// sig handling
+// Todo: clean-up functions
+void signalHandler( int signum ) {
+    std::cout << "\nInterrupt signal (" << signum << ") received.\n";
+    // cleanup and close up stuff here
+    // terminate program
+    exit(signum);
+}
 
+
+// program start
 int main(int argc, char* argv[]) {
+    std::signal(SIGINT, signalHandler);
     configHandlers(packetHandler, summaryHandler);
     startSpitting();
-
 }
 

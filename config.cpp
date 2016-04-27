@@ -13,13 +13,18 @@ Config::Config() {
     const std::string configFileName = "config.json";
     boost::property_tree::ptree pt;
     boost::property_tree::json_parser::read_json(configFileName, pt);
-    location = pt.get<std::string>("config.location");
-    device = pt.get<std::string>("config.device");
-    bpf = pt.get<std::string>("config.bpf");
-    periodLength = pt.get<int>("config.periodLength");
-    maxPkts = pt.get<int>("config.maxPkts");
+    // session
+    location = pt.get<std::string>("session.location");
+    title = pt.get<std::string>("session.title");
+    currentSessionId = -1;
+    // sniffer
+    device = pt.get<std::string>("sniffer.device");
+    bpf = pt.get<std::string>("sniffer.bpf");
+    periodLength = pt.get<int>("sniffer.periodLength");
+    maxPkts = pt.get<int>("sniffer.maxPkts");
+    // db
     dbConnect = postgresConnectString(pt);
-
+    // output
     outScrPkts = pt.get<bool>("output.screen.packets");
     outScrPeriodHdr = pt.get<bool>("output.screen.period_header");
     outScrPeriodDetails = pt.get<bool>("output.screen.period_details");
@@ -27,8 +32,14 @@ Config::Config() {
     outTxtPeriods = pt.get<bool>("output.txt_file.packets");
     outPgPkts = pt.get<bool>("output.postgres.packets");
     outPgPeriods = pt.get<bool>("output.postgres.periods");
-    currentSessionId = -1;
-
+    // hopper
+    hop = pt.get<bool>("hopper.hop");
+    hopsPerSec = pt.get<int>("hopper.hops_per_sec");
+    std::stringstream chStream(pt.get<std::string>("hopper.channels"));
+    int n;
+    while(chStream >> n){
+       channels.push_back(n);
+    }
 }
 
 

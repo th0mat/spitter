@@ -14,14 +14,21 @@ private:
     Config();
 
 public:
+    // session
     std::string location;
+    std::string title;
+
+    // sniffer
     std::string device;
     std::string bpf;
     long currentSessionId; // not from config file
     int periodLength;
     long maxPkts;
+
+    // db
     std::string dbConnect;
 
+    // output
     bool outScrPkts;
     bool outScrPeriodHdr;
     bool outScrPeriodDetails;
@@ -30,7 +37,10 @@ public:
     bool outPgPkts;
     bool outPgPeriods;
 
-
+    // hopper
+    bool hop;
+    int hopsPerSec;
+    std::list<int> channels;
 
     static Config& get();
 
