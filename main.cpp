@@ -26,12 +26,10 @@ void summaryHandler(const Summary& summary) {
 };
 
 
-// sig handling
+// signal handling
 // Todo: clean-up functions
 void signalHandler( int signum ) {
     std::cout << "\nInterrupt signal (" << signum << ") received.\n";
-    // cleanup and close up stuff here
-    // terminate program
     exit(signum);
 }
 

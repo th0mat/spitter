@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # channel hopping script for osx
 # needs to be run with root
@@ -22,7 +22,7 @@ SECS_TO_REMAIN_ON_CHANNEL=0.05
 
 
 # return the interface to a status ready for associations after the script
-# is stopped
+# is stopped with ctrl-c
 trap ctrl_c INT
 function ctrl_c() {
    ifconfig en0 up
@@ -41,4 +41,3 @@ while true ; do
       sleep $SECS_TO_REMAIN_ON_CHANNEL
    done
 done
-
