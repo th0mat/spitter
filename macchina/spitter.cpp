@@ -6,7 +6,7 @@
 #include <vector>
 #include <pcap/pcap.h>
 #include "spitter.h"
-#include "config.h"
+#include "../config.h"
 #include "spitutils.h"
 
 

@@ -1,9 +1,10 @@
 //
 // Created by Thomas Natter on 3/20/16.
 //
+// Todo: hopper implementation
 
-#include "spitter.h"
-#include "spitutils.h"
+#include "macchina/spitter.h"
+#include "macchina/spitutils.h"
 #include "config.h"
 #include <csignal>
 

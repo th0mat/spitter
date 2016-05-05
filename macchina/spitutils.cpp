@@ -8,8 +8,8 @@
 #include <set>
 #include "spitter.h"
 #include "spitutils.h"
-#include "mac2oui/lookup.h"
-#include "config.h"
+#include "../mac2oui/lookup.h"
+#include "../config.h"
 
 using std::chrono::microseconds;
 using std::chrono::seconds;

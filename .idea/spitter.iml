@@ -3,17 +3,21 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/config.json" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/config.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/spitutils.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/spitter.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mac2oui/oui_download.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mac2oui/lookup.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mac2oui/lookup.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mac2oui/mac_config.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/config.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/spitter.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/spitutils.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macchina/spitutils.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macchina/spitter.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macchina/spitutils.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macchina/spitter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/testset1/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/testset1/check1.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/testset1/10min.pcap" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/config.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
