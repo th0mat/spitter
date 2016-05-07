@@ -34,6 +34,7 @@ public:
     bool outScrPeriodDetails;
     bool outTxtPkts;
     bool outTxtPeriods;
+    std::string outTxtDir;
     bool outPgPkts;
     bool outPgPeriods;
 
@@ -41,6 +42,10 @@ public:
     bool hop;
     int hopsPerSec;
     std::list<int> channels;
+
+    // read from file
+    bool readFromFile;
+    std::string fileName;
 
     static Config& get();
 

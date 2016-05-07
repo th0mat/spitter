@@ -1,6 +1,5 @@
 add_executable(runTests check1.cpp ../../mac2oui/lookup.cpp)
 
-target_link_libraries(runTests gtest gtest_main ${spitter_BINARY_DIR})
 
 configure_file(../../mac2oui/oui_download.txt ../../mac2oui/oui_download.txt COPYONLY)
 configure_file(../../mac2oui/mac_config.txt ../../mac2oui/mac_config.txt COPYONLY)

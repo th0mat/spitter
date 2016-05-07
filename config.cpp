@@ -28,8 +28,9 @@ Config::Config() {
     outScrPkts = pt.get<bool>("output.screen.packets");
     outScrPeriodHdr = pt.get<bool>("output.screen.period_header");
     outScrPeriodDetails = pt.get<bool>("output.screen.period_details");
-    outTxtPkts = pt.get<bool>("output.txt_file.packets");
-    outTxtPeriods = pt.get<bool>("output.txt_file.packets");
+    outTxtPkts = pt.get<bool>("output.log_file.packets");
+    outTxtPeriods = pt.get<bool>("output.log_file.packets");
+    outTxtDir = pt.get<std::string>("output.log_file.dir");
     outPgPkts = pt.get<bool>("output.postgres.packets");
     outPgPeriods = pt.get<bool>("output.postgres.periods");
     // hopper
@@ -40,6 +41,9 @@ Config::Config() {
     while(chStream >> n){
        channels.push_back(n);
     }
+    // read from file
+    readFromFile = pt.get<bool>("file.read_from_file");
+    fileName = pt.get<std::string>("file.file_name");
 }
 
 

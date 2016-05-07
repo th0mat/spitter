@@ -11,9 +11,9 @@
 // output configuration
 
 void packetHandler(const Packet& pkt) {
-    if (Config::get().outScrPkts && pkt.crc) screenPrintPacket(pkt);
+    if (Config::get().outScrPkts) screenPrintPacket(pkt);
     if (Config::get().outTxtPkts && pkt.crc) txtLogPacket(pkt);
-    if (Config::get().outPgPkts && pkt.crc) dbLogPacket(pkt);
+    if (Config::get().outPgPkts) dbLogPacket(pkt);
 };
 
 void summaryHandler(const Summary& summary) {

@@ -46,6 +46,15 @@ struct RadioTapHeader {
 };
 
 
+struct pcap_file_rec_hdr {
+    u_int ts_sec;         /* timestamp seconds */
+    u_int ts_usec;        /* timestamp microseconds */
+    u_int incl_len;       /* number of octets of packet saved in file */
+    u_int orig_len;       /* actual length of packet */
+};
+
+
+
 struct MacHeader {
     unsigned protocol:2;
     unsigned type:2;
@@ -73,7 +82,7 @@ struct Packet {
     MacHeader macHeader;
 };
 
-
+void readPcapFileLoop();
 void configHandlers(void (*pktHandler)(const Packet&), void (*summaryHandler)(const Summary&));
 int startSpitting();
 long addressToLong(const u_char*);

@@ -82,7 +82,8 @@ void screenPrintPacket(const Packet& pkt) {
 }
 
 void txtLogPeriodDetails(const Summary& summary) {
-    std::ofstream ofs{"./period_details.log", std::ofstream::app};
+    static std::string fileName = Config::get().outTxtDir + "period_details.log";
+    std::ofstream ofs{fileName, std::ofstream::app};
     char timeStamp[100];
     char buffer[100];
     time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
@@ -102,7 +103,8 @@ void txtLogPeriodDetails(const Summary& summary) {
 }
 
 void txtLogPeriodHeader(const Summary& summary) {
-    std::ofstream ofs("./period_headers.log", std::ofstream::out | std::ofstream::app);
+    static std::string fileName = Config::get().outTxtDir + "period_headers.log";
+    std::ofstream ofs(fileName, std::ofstream::out | std::ofstream::app);
     if (!ofs.is_open()) {
         std::cout << "*** could not open log_file";
         std::exit(-2);
@@ -126,7 +128,8 @@ void txtLogPeriodHeader(const Summary& summary) {
 }
 
 void txtLogPacket(const Packet& pkt) {
-    std::ofstream ofs{"./packets.log", std::ofstream::app};
+    static std::string fileName = Config::get().outTxtDir + "packets.log";
+    std::ofstream ofs{fileName, std::ofstream::app};
     char buffer[300];
     char tmp[50];
     static int runningNo = 0;
@@ -179,6 +182,8 @@ void errorLogPacket(const Packet& pkt) {
 void dbLogSession() {
     pqxx::connection conn(Config::get().dbConnect.c_str());
     pqxx::work work(conn);
+    // Todo: insert values from config
+    // Todo: special case read_from_file
     conn.prepare("session", "INSERT INTO sessions (period, name, location, start_time) VALUES "
             "($1, 'default', 'home', localtimestamp) RETURNING session_id;");
     pqxx::result r = work.prepared("session")

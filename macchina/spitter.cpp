@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include <pcap/pcap.h>
+#include <ios>
+#include <fstream>
 #include "spitter.h"
 #include "../config.h"
 #include "spitutils.h"
@@ -68,32 +70,37 @@ void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
 }
 
 int startSpitting() {
+    if (Config::get().readFromFile){
+        if (Config::get().outPgPeriods || Config::get().outPgPkts) dbLogSession();
+        readPcapFileLoop();
+        return 0;
+    }
     pcap_t* handle;                        // session handle
     char errbuf[PCAP_ERRBUF_SIZE];         // buff for error string
     struct bpf_program fp;                 // compiled filter
     //bpf_u_int32 mask;					   // netmask mask - not set
     bpf_u_int32 net = 0;                   // our IP - needed only as arg
-    /* pcap_create allows setting params before activation - pacap_open_golive
-    combines those two steps -> setting monitor mode not possible */
-    //SpitterConfig config;
+    // pcap_create allows setting params before activation - pacap_open_golive
+    // combines those two steps -> setting monitor mode not possible
+    // SpitterConfig config;
     handle = pcap_create(Config::get().device.c_str(), errbuf);
     if (handle == NULL) {
         printf("pcap_create failed: %s\n", errbuf);
         return (2);
     }
 
-    /* set monitor monde */
+    // set monitor mode
     if (pcap_set_rfmon(handle, 1) == 0) {
     }
     pcap_set_snaplen(handle, -1);          // -1: full pkt
     pcap_set_timeout(handle, 500);         // millisec
     pcap_activate(handle);
-    /* check for link layer */
+    // check for link layer
     if (pcap_datalink(handle) != 127) {
         printf("device %s doesn't exist or provide RadioTap headers - try 'en0'\n", Config::get().device.c_str());
         return (2);
     }
-    /* compile and apply BPF */
+    // compile and apply BPF
     if (pcap_compile(handle, &fp, Config::get().bpf.c_str(), 0, net) == -1) {
         printf("failed to parse filter %s: %s\n", Config::get().bpf.c_str(), pcap_geterr(handle));
         return (2);
@@ -105,7 +112,7 @@ int startSpitting() {
     if (Config::get().outPgPeriods || Config::get().outPgPkts) dbLogSession();
     pcap_loop(handle, Config::get().maxPkts, rawHandler, nullptr);        // -1: no pkt number limit
     pcap_close(handle);
-    return (0);
+    return 0;
 }
 
 bool crc32(const pcap_pkthdr* header, const u_char* packet) {
@@ -129,8 +136,15 @@ short getRadioTapLength(const u_char* packet) {
 }
 
 void checkPeriod(const pcap_pkthdr* header) {
+    static bool firstPkt = true;
     auto nowTime = std::chrono::time_point<std::chrono::system_clock>() +
                    std::chrono::microseconds(header->ts.tv_usec + header->ts.tv_sec * 1000000);
+    if (Config::get().readFromFile && firstPkt) {
+        current->periodEnd = nowTime + std::chrono::seconds(Config::get().periodLength) -
+                std::chrono::microseconds(header->ts.tv_usec);
+        firstPkt = false;
+    }
+
     if (nowTime >= current->periodEnd) {
         summaryHandler(*current);
         // Todo: period jump defense
@@ -138,7 +152,6 @@ void checkPeriod(const pcap_pkthdr* header) {
         current->stations.clear();
         current->corrupted = StaData();
         current->valid = StaData();
-
     }
 }
 
@@ -303,4 +316,33 @@ uint32_t crc32buf(char* buf, size_t len) {
         oldcrc32 = UPDC32(*buf, oldcrc32);
     }
     return ~oldcrc32;
+}
+
+// Repackage records from a pcap file to look like packets from a pcap capture.
+// The record headers from the pcap file need to be transformed to the format of
+// packet headers from a libpcap capture.
+void readPcapFileLoop(){
+    pcap_pkthdr* pcap_hdr = new pcap_pkthdr{};
+    pcap_file_rec_hdr* rec_hdr;
+    u_char* pkt_hdr;
+    std::ifstream ifs(Config::get().fileName, std::ios::in | std::ios::binary);
+    if (!ifs) { std::cout << "pcap file not found\n"; exit(1); }
+    // get length of file:
+    ifs.seekg(0, ifs.end);
+    int length = ifs.tellg();
+    ifs.seekg (0, ifs.beg);
+    char* buffer = new char[length];
+    ifs.read(buffer,length);
+    ifs.close();
+    int ptr = 24; // jump to beginning of first record
+    while (ptr < length) {
+        rec_hdr = reinterpret_cast<pcap_file_rec_hdr*>(&buffer[ptr]);
+        pcap_hdr->caplen = rec_hdr->incl_len;
+        pcap_hdr->len = rec_hdr->orig_len;
+        pcap_hdr->ts.tv_sec = rec_hdr->ts_sec;
+        pcap_hdr->ts.tv_usec = rec_hdr->ts_usec;
+        pkt_hdr = reinterpret_cast<u_char*>(&buffer[ptr + 16]);
+        ptr = ptr + 16 + rec_hdr->incl_len;
+        rawHandler(nullptr, pcap_hdr, pkt_hdr);
+    }
 }

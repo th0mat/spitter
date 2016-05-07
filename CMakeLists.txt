@@ -14,6 +14,7 @@ add_executable(spitter ${SOURCE_FILES})
 
 configure_file(mac2oui/oui_download.txt mac2oui/oui_download.txt COPYONLY)
 configure_file(mac2oui/mac_config.txt mac2oui/mac_config.txt COPYONLY)
+configure_file(macchina/10min.pcap macchina/10min.pcap COPYONLY)
 configure_file(config.json config.json COPYONLY)
 
 

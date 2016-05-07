@@ -6,7 +6,7 @@
   "sniffer": {
     "device": "en0",
     "bpf": "",
-    "periodLength": 5,
+    "periodLength": 1,
     "maxPkts": 0
   },
   "hopper": {
@@ -24,17 +24,22 @@
   },
   "output": {
     "screen": {
-      "packets": true,
-      "period_header": false,
+      "packets": false,
+      "period_header": true,
       "period_details": false
     },
-    "txt_file": {
-      "packets": false,
-      "periods": false
+    "log_file": {
+      "packets": true,
+      "periods": true,
+      "dir": "/users/thomasnatter/log/spitter/"
     },
     "postgres": {
-      "packets": true,
+      "packets": false,
       "periods": false
     }
+  },
+  "file": {
+    "read_from_file": false,
+    "file_name": "/users/thomasnatter/Desktop/10min.pcap"
   }
 }
