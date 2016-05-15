@@ -44,7 +44,7 @@ public:
     std::list<int> channels;
 
     // read from file
-    bool readFromFile;
+    bool readPcapFile;
     std::string fileName;
 
     static Config& get();

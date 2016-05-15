@@ -70,7 +70,7 @@ void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
 }
 
 int startSpitting() {
-    if (Config::get().readFromFile){
+    if (Config::get().readPcapFile){
         if (Config::get().outPgPeriods || Config::get().outPgPkts) dbLogSession();
         readPcapFileLoop();
         return 0;
@@ -139,7 +139,7 @@ void checkPeriod(const pcap_pkthdr* header) {
     static bool firstPkt = true;
     auto nowTime = std::chrono::time_point<std::chrono::system_clock>() +
                    std::chrono::microseconds(header->ts.tv_usec + header->ts.tv_sec * 1000000);
-    if (Config::get().readFromFile && firstPkt) {
+    if (Config::get().readPcapFile && firstPkt) {
         current->periodEnd = nowTime + std::chrono::seconds(Config::get().periodLength) -
                 std::chrono::microseconds(header->ts.tv_usec);
         firstPkt = false;

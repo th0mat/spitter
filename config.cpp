@@ -42,7 +42,7 @@ Config::Config() {
        channels.push_back(n);
     }
     // read from file
-    readFromFile = pt.get<bool>("file.read_from_file");
+    readPcapFile = pt.get<bool>("file.read_pcap_file");
     fileName = pt.get<std::string>("file.file_name");
 }
 
