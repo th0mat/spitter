@@ -41,7 +41,7 @@ public:
     // hopper
     bool hop;
     int hopsPerSec;
-    std::list<int> channels;
+    std::vector<int> channels;
 
     // read from file
     bool readPcapFile;

@@ -7,10 +7,10 @@
     "device": "en0",
     "bpf": "",
     "periodLength": 3,
-    "maxPkts": 0
+    "maxPkts": 100
   },
   "hopper": {
-    "hop": false,
+    "hop": true,
     "hops_per_sec": 10,
     "channels": "1 3 5 7 9"
   },
@@ -24,9 +24,9 @@
   },
   "output": {
     "screen": {
-      "packets": false,
-      "period_header": true,
-      "period_details": true
+      "packets": true,
+      "period_header": false,
+      "period_details": false
     },
     "log_file": {
       "packets": false,

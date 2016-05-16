@@ -23,7 +23,7 @@ Config::Config() {
     periodLength = pt.get<int>("sniffer.periodLength");
     maxPkts = pt.get<int>("sniffer.maxPkts");
     // db
-    dbConnect = postgresConnectString(pt);
+    ////////////dbConnect = postgresConnectString(pt);
     // output
     outScrPkts = pt.get<bool>("output.screen.packets");
     outScrPeriodHdr = pt.get<bool>("output.screen.period_header");
@@ -48,6 +48,7 @@ Config::Config() {
 
 
 std::string postgresConnectString(const boost::property_tree::ptree& pt) {
+    if (!Config::get().outPgPeriods && !Config::get().outPgPkts) return std::string("not needed as per config");
     std::string pgc{"dbname="};
     pgc += pt.get<std::string>("db.dbname");
     pgc += " host=";
@@ -71,7 +72,7 @@ std::string postgresConnectString(const boost::property_tree::ptree& pt) {
 
 
 Config& Config::get() {
-    static Config config;
-    return config;
+    static Config* config = new Config();
+    return *config;
 }
 

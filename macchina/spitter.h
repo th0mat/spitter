@@ -10,7 +10,7 @@
 #include <vector>
 #include <pcap/pcap.h>
 #include <map>
-
+#include "../config.h"
 
 
 void rawHandler(u_char *args, const pcap_pkthdr *header, const u_char *packet);
@@ -86,6 +86,7 @@ void readPcapFileLoop();
 void configHandlers(void (*pktHandler)(const Packet&), void (*summaryHandler)(const Summary&));
 int startSpitting();
 long addressToLong(const u_char*);
+void hop();
 
 
 #endif //SPITTER_SPITTER_H

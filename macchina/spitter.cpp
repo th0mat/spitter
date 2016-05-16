@@ -6,13 +6,14 @@
 #include <vector>
 #include <pcap/pcap.h>
 #include <ios>
+#include <thread>
 #include <fstream>
 #include "spitter.h"
 #include "../config.h"
 #include "spitutils.h"
 
 
-
+volatile bool keepHopping = true;
 
 bool crc32(const pcap_pkthdr* header, const u_char* packet);
 
@@ -109,9 +110,20 @@ int startSpitting() {
         printf("failed to install filter %s: %s\n", Config::get().bpf.c_str(), pcap_geterr(handle));
         return (2);
     }
+    // start channel hopping
+    if (Config::get().hop) {
+        std::thread t1(hop);
+        t1.detach();
+    }
+    // log session entry
     if (Config::get().outPgPeriods || Config::get().outPgPkts) dbLogSession();
+    // enter loop
     pcap_loop(handle, Config::get().maxPkts, rawHandler, nullptr);        // -1: no pkt number limit
     pcap_close(handle);
+    if (Config::get().hop) {
+        keepHopping = false;
+        std::this_thread::sleep_for(std::chrono::microseconds(1000000));
+    }
     return 0;
 }
 
@@ -345,4 +357,23 @@ void readPcapFileLoop(){
         ptr = ptr + 16 + rec_hdr->incl_len;
         rawHandler(nullptr, pcap_hdr, pkt_hdr);
     }
+}
+
+
+void hop(){
+    Config config = Config::get();
+    std::system("sudo /bin/bash -c 'airport en0 -z'");
+    int c;
+    int remain = 1000000 / config.hopsPerSec;
+    std::string cmd_base = "sudo /bin/bash -c 'airport en0 -c";
+    std::string cmd;
+    while (keepHopping) {
+        c = config.channels[std::rand() % config.channels.size()];
+        cmd = cmd_base + std::to_string(c) + "'";
+        std::system(cmd.c_str());
+        std::this_thread::sleep_for(std::chrono::microseconds(remain));
+    }
+    std::system("sudo /bin/bash -c 'ifconfig en0 up'");
+    std::cout << "[*] channel hopping terminated\n";
+    return;
 }
