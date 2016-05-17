@@ -61,8 +61,9 @@ void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
     int lengthInclRadioTap = header->len;
     const MacHeader* const_mac = reinterpret_cast<const MacHeader*>(packet + getRadioTapLength(packet));
     MacHeader* mac = const_cast<MacHeader*>(const_mac);
-    const RadioTapHeader* radio = reinterpret_cast<const RadioTapHeader*>(packet);
-    Packet pkt{crc, timeStampMicroSecs, lengthInclRadioTap, *radio, mac};
+    const RadioTapHeader* const_radio = reinterpret_cast<const RadioTapHeader*>(packet);
+    RadioTapHeader* radio = const_cast<RadioTapHeader*>(const_radio);
+    Packet pkt{crc, timeStampMicroSecs, lengthInclRadioTap, radio, mac};
 
     checkPeriod(header);
     addToSummary(pkt);

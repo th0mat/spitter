@@ -6,7 +6,8 @@
   "sniffer": {
     "device": "en0",
     "bpf": "",
-    "periodLength": 3,
+    "periodLength": 2,
+    "periodLength": 2,
     "maxPkts": 0
   },
   "hopper": {
@@ -24,9 +25,9 @@
   },
   "output": {
     "screen": {
-      "packets": true,
+      "packets": false,
       "period_header": false,
-      "period_details": false
+      "period_details": true
     },
     "log_file": {
       "packets": false,

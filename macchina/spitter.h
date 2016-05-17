@@ -77,8 +77,7 @@ struct Packet {
     bool crc;
     long timeStampMicroSecs;  // in micorsec unix time
     int lengthInclRadioTap;
-    // Todo: change to ptrs
-    RadioTapHeader radioTapHeader;
+    RadioTapHeader* radioTapHeader;
     MacHeader* macHeader;
 };
 

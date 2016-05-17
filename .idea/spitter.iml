@@ -13,7 +13,6 @@
       <sourceFolder url="file://$MODULE_DIR$/macchina/spitter.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/macchina/spitutils.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/macchina/spitter.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/macchina/10min.pcap" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/testset1/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/testset1/check1.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/testset1/10min.pcap" isTestSource="false" />

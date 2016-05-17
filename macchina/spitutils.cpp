@@ -62,13 +62,13 @@ void screenPrintPacket(const Packet& pkt) {
     static int runningNo = 0;
     char tmp[50];
     char* timeStamp = timeStampFromPkt(pkt, tmp);
-    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader->length;
     std::string addr1, addr2, addr3;
     getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     printf("[%8d] %s | %4d | %5d bytes | %-5s | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
            runningNo,
            timeStamp,
-           pkt.radioTapHeader.channelFreq,
+           pkt.radioTapHeader->channelFreq,
            macPktLength,
            pkt.crc ? "valid" : "corr",
            pkt.macHeader->type,
@@ -134,13 +134,13 @@ void txtLogPacket(const Packet& pkt) {
     char tmp[50];
     static int runningNo = 0;
     char* timeStamp = timeStampFromPkt(pkt, tmp);
-    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader->length;
     std::string addr1, addr2, addr3;
     getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     sprintf(buffer, "[%8d] %s | %4d | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
             runningNo,
             timeStamp,
-            pkt.radioTapHeader.channelFreq,
+            pkt.radioTapHeader->channelFreq,
             macPktLength,
             pkt.macHeader->type,
             pkt.macHeader->subtype,
@@ -160,7 +160,7 @@ void errorLogPacket(const Packet& pkt) {
     char tmp[50];
     static int runningNo = 0;
     char* timeStamp = timeStampFromPkt(pkt, tmp);
-    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader->length;
     std::string addr1, addr2, addr3;
     getAddresses(pkt, macPktLength, addr1, addr2, addr3);
     sprintf(buffer, "[%8d] %s | %5d bytes | %1d / %2d | %3d tfDs | %16s | %16s | %16s | \n",
@@ -285,7 +285,7 @@ void dbLogPacket(const Packet& pkt) {
     long addr1{NULL};
     long addr2{NULL};
     long addr3{NULL};
-    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader.length;
+    int macPktLength = pkt.lengthInclRadioTap - pkt.radioTapHeader->length;
     double timeStamp = pkt.timeStampMicroSecs * 1.0 / 1000000;
 
     if (pkt.crc) {
@@ -318,7 +318,7 @@ void dbLogPacket(const Packet& pkt) {
                     (addr1)
                     (addr2)
                     (addr3)
-                    (pkt.radioTapHeader.channelFreq)
+                    (pkt.radioTapHeader->channelFreq)
             .exec();
     work.commit();
 }
