@@ -183,7 +183,6 @@ void dbLogSession() {
     pqxx::connection conn(Config::get().dbConnect.c_str());
     pqxx::work work(conn);
     // Todo: insert values from config
-    // Todo: special case read_from_file
     conn.prepare("session", "INSERT INTO sessions (period, name, location, start_time) VALUES "
             "($1, 'default', 'home', localtimestamp) RETURNING session_id;");
     pqxx::result r = work.prepared("session")

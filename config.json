@@ -7,7 +7,7 @@
     "device": "en0",
     "bpf": "",
     "periodLength": 3,
-    "maxPkts": 100
+    "maxPkts": 0
   },
   "hopper": {
     "hop": true,

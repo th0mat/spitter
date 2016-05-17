@@ -1,7 +1,6 @@
 //
 // Created by Thomas Natter on 3/20/16.
 //
-// Todo: hopper implementation
 
 #include "macchina/spitter.h"
 #include "macchina/spitutils.h"
@@ -28,7 +27,6 @@ void summaryHandler(const Summary& summary) {
 
 
 // signal handling
-// Todo: clean-up functions
 void signalHandler( int signum ) {
     std::cout << "\nInterrupt signal (" << signum << ") received.\n";
     if (Config::get().hop) std::system("sudo /bin/bash -c 'ifconfig en0 up'");
