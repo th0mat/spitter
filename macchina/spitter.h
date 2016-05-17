@@ -79,7 +79,7 @@ struct Packet {
     int lengthInclRadioTap;
     // Todo: change to ptrs
     RadioTapHeader radioTapHeader;
-    MacHeader macHeader;
+    MacHeader* macHeader;
 };
 
 void readPcapFileLoop();

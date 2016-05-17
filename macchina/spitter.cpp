@@ -59,11 +59,10 @@ void rawHandler(u_char* args, const pcap_pkthdr* header, const u_char* packet) {
     bool crc = crc32(header, packet);
     long timeStampMicroSecs = header->ts.tv_sec * 1000000 + header->ts.tv_usec;
     int lengthInclRadioTap = header->len;
-
-    const MacHeader* mac = reinterpret_cast<const MacHeader*>(packet +
-                                                              getRadioTapLength(packet));
+    const MacHeader* const_mac = reinterpret_cast<const MacHeader*>(packet + getRadioTapLength(packet));
+    MacHeader* mac = const_cast<MacHeader*>(const_mac);
     const RadioTapHeader* radio = reinterpret_cast<const RadioTapHeader*>(packet);
-    Packet pkt{crc, timeStampMicroSecs, lengthInclRadioTap, *radio, *mac};
+    Packet pkt{crc, timeStampMicroSecs, lengthInclRadioTap, *radio, mac};
 
     checkPeriod(header);
     addToSummary(pkt);
@@ -227,16 +226,16 @@ long addressToLong(const u_char* p) {
 
 long getStaAddr(const Packet& pkt) {
     int no = 0;
-    if (pkt.macHeader.type == 0) { no = PktTypes::t0[pkt.macHeader.subtype]; }
+    if (pkt.macHeader->type == 0) { no = PktTypes::t0[pkt.macHeader->subtype]; }
     // if (pkt.macHeader.type == 1) { no = PktTypes::t1[pkt.macHeader.subtype]; } // excluded already
-    if (pkt.macHeader.type == 2) { no = PktTypes::t2[pkt.macHeader.toFromDs]; }
+    if (pkt.macHeader->type == 2) { no = PktTypes::t2[pkt.macHeader->toFromDs]; }
     if (no == 0) {
         errorLogPacket(pkt);
         return 666;
 
     };   // for "undefined";
-    if (no == 1) return addressToLong(pkt.macHeader.addr1);
-    if (no == 2) return addressToLong(pkt.macHeader.addr2);
+    if (no == 1) return addressToLong(pkt.macHeader->addr1);
+    if (no == 2) return addressToLong(pkt.macHeader->addr2);
     errorLogPacket(pkt);
     return 666;
 }
@@ -250,9 +249,9 @@ void addToSummary(const Packet& pkt) {
     }
     current->valid.bytes += pkt.lengthInclRadioTap;
     current->valid.packets += 1;
-    if (pkt.macHeader.type == 1) return; // exclude control frames from STA identification
-    if (pkt.macHeader.type == 2 && pkt.macHeader.toFromDs == 0) return; // exclude data frames not to/from STA
-    if (pkt.macHeader.type == 2 && pkt.macHeader.toFromDs == 3) return; // exclude data frames not to/from STA
+    if (pkt.macHeader->type == 1) return; // exclude control frames from STA identification
+    if (pkt.macHeader->type == 2 && pkt.macHeader->toFromDs == 0) return; // exclude data frames not to/from STA
+    if (pkt.macHeader->type == 2 && pkt.macHeader->toFromDs == 3) return; // exclude data frames not to/from STA
     long sta = getStaAddr(pkt);
     auto ptr = current->stations.find(sta);
     if (ptr != current->stations.end()) {

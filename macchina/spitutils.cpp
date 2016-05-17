@@ -71,9 +71,9 @@ void screenPrintPacket(const Packet& pkt) {
            pkt.radioTapHeader.channelFreq,
            macPktLength,
            pkt.crc ? "valid" : "corr",
-           pkt.macHeader.type,
-           pkt.macHeader.subtype,
-           pkt.macHeader.toFromDs,
+           pkt.macHeader->type,
+           pkt.macHeader->subtype,
+           pkt.macHeader->toFromDs,
            addr1.c_str(),
            addr2.c_str(),
            addr3.c_str()
@@ -142,9 +142,9 @@ void txtLogPacket(const Packet& pkt) {
             timeStamp,
             pkt.radioTapHeader.channelFreq,
             macPktLength,
-            pkt.macHeader.type,
-            pkt.macHeader.subtype,
-            pkt.macHeader.toFromDs,
+            pkt.macHeader->type,
+            pkt.macHeader->subtype,
+            pkt.macHeader->toFromDs,
             addr1.c_str(),
             addr2.c_str(),
             addr3.c_str()
@@ -167,9 +167,9 @@ void errorLogPacket(const Packet& pkt) {
             runningNo,
             timeStamp,
             macPktLength,
-            pkt.macHeader.type,
-            pkt.macHeader.subtype,
-            pkt.macHeader.toFromDs,
+            pkt.macHeader->type,
+            pkt.macHeader->subtype,
+            pkt.macHeader->toFromDs,
             addr1.c_str(),
             addr2.c_str(),
             addr3.c_str()
@@ -274,9 +274,9 @@ char* timeStampFromPkt(const Packet& pkt, char* timeStamp) {
 
 void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::string& addr2, std::string& addr3) {
     addr1 = addr2 = addr3 = "-";
-    if (macPktLength >= 14) { addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr1)); }
-    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr2)); }
-    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader.addr3)); }
+    if (macPktLength >= 14) { addr1 = resolveMac(const_cast<u_char*>(pkt.macHeader->addr1)); }
+    if (macPktLength >= 20) { addr2 = resolveMac(const_cast<u_char*>(pkt.macHeader->addr2)); }
+    if (macPktLength >= 26) { addr3 = resolveMac(const_cast<u_char*>(pkt.macHeader->addr3)); }
 }
 
 void dbLogPacket(const Packet& pkt) {
@@ -290,15 +290,15 @@ void dbLogPacket(const Packet& pkt) {
 
     if (pkt.crc) {
         if (macPktLength >= 14) {
-            addr1 = addressToLong(pkt.macHeader.addr1);
+            addr1 = addressToLong(pkt.macHeader->addr1);
             dbRegisterMacIfNew(addr1);
         }
         if (macPktLength >= 20) {
-            addr2 = addressToLong(pkt.macHeader.addr2);
+            addr2 = addressToLong(pkt.macHeader->addr2);
             dbRegisterMacIfNew(addr1);
         }
         if (macPktLength >= 26) {
-            addr3 = addressToLong(pkt.macHeader.addr3);
+            addr3 = addressToLong(pkt.macHeader->addr3);
             dbRegisterMacIfNew(addr1);
         }
     }
@@ -309,10 +309,10 @@ void dbLogPacket(const Packet& pkt) {
     work.prepared("packet")
                     (Config::get().currentSessionId)
                     (timeStamp)
-                    (pkt.macHeader.protocol)
-                    (pkt.macHeader.type)
-                    (pkt.macHeader.subtype)
-                    (pkt.macHeader.toFromDs)
+                    (pkt.macHeader->protocol)
+                    (pkt.macHeader->type)
+                    (pkt.macHeader->subtype)
+                    (pkt.macHeader->toFromDs)
                     (pkt.crc)
                     (pkt.lengthInclRadioTap)
                     (addr1)

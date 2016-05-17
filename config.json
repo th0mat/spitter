@@ -10,7 +10,7 @@
     "maxPkts": 0
   },
   "hopper": {
-    "hop": true,
+    "hop": false,
     "hops_per_sec": 10,
     "channels": "1 3 5 7 9"
   },
