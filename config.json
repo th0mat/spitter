@@ -7,7 +7,6 @@
     "device": "en0",
     "bpf": "",
     "periodLength": 2,
-    "periodLength": 2,
     "maxPkts": 0
   },
   "hopper": {
@@ -26,8 +25,8 @@
   "output": {
     "screen": {
       "packets": false,
-      "period_header": false,
-      "period_details": true
+      "period_header": true,
+      "period_details": false
     },
     "log_file": {
       "packets": false,
@@ -35,12 +34,12 @@
       "dir": "/users/thomasnatter/log/spitter/"
     },
     "postgres": {
-      "packets": false,
-      "periods": false
+      "packets": true,
+      "periods": true
     }
   },
   "file": {
-    "read_pcap_file": false,
-    "file_name": "/users/thomasnatter/Desktop/10min.pcap"
+    "read_pcap_file": true,
+    "file_name": "/users/thomasnatter/Dropbox/scripts/notebooks/data/10kprobes.pcap"
   }
 }
