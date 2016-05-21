@@ -343,8 +343,8 @@ void readPcapFileLoop(){
     ifs.seekg(0, ifs.end);
     int length = ifs.tellg();
     ifs.seekg (0, ifs.beg);
-    char* buffer = new char[length];
-    ifs.read(buffer,length);
+    std::vector<char> buffer(length);
+    ifs.read(buffer.data(), length);
     ifs.close();
     int ptr = 24; // jump to beginning of first record
     while (ptr < length) {

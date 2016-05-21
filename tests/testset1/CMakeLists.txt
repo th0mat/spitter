@@ -1,4 +1,5 @@
 add_executable(runTests check1.cpp ../../mac2oui/lookup.cpp)
+target_link_libraries(runTests gtest)
 
 
 configure_file(../../mac2oui/oui_download.txt ../../mac2oui/oui_download.txt COPYONLY)

@@ -44,7 +44,7 @@ public:
     std::vector<int> channels;
 
     // read from file
-    bool readPcapFile;
+    bool  readPcapFile;
     std::string fileName;
 
     static Config& get();

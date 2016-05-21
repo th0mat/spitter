@@ -23,10 +23,8 @@ std::string longToHex(const long& mac64) {
     std::stringstream stream;
     stream << std::setfill('0') << std::setw(12) << std::hex << mac64;
     return stream.str();
-
 }
 
-void dbRegisterMacIfNew(const long);
 
 void screenPrintPeriodDetails(const Summary& summary) {
     char timeStamp[100];
@@ -179,26 +177,88 @@ void errorLogPacket(const Packet& pkt) {
     runningNo++;
 }
 
+
+namespace {
+    struct cnx {
+        pqxx::connection conn;
+        std::unique_ptr<pqxx::work> pwork;
+
+        cnx(const char* dsn)
+                : conn(dsn), pwork(new pqxx::work(conn))
+        {
+            conn.prepare("session", "INSERT INTO sessions (period, name, location, start_time) VALUES "
+                    "($1, 'default', 'home', localtimestamp) RETURNING session_id;");
+            conn.prepare("periods",
+                         "INSERT INTO periods (session_id, end_time, no_pkts_valid, no_pkts_corr, bytes_valid, bytes_corr, no_stations) "
+                                 "VALUES ($1, to_timestamp($2), $3, $4, $5, $6, $7) RETURNING period_id;");
+            conn.prepare("summaries", "INSERT INTO summaries (period_id, mac_int, mac_res, no_pkts, no_bytes) "
+                    "VALUES ($1, $2, $3, $4, $5);");
+            conn.prepare("registerMac",
+                         "INSERT INTO macs (mac_int, mac_hex, mac_res) "
+                                 "VALUES ($1, $2, $3) ON CONFLICT (mac_int) DO NOTHING;");
+            conn.prepare("packet", "INSERT INTO packets (session_id, time_stamp, protocol, type, subtype, "
+                    "to_from_ds, crc_valid, length, addr1, addr2, addr3, channel_freq) VALUES "
+                    "($1, to_timestamp($2), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);");
+        }
+        ~cnx() {
+            pwork->commit();
+        }
+    };
+
+    cnx& mycnx(const char *dsn = nullptr) {
+        static cnx c(dsn);
+        return c;
+    }
+
+    pqxx::connection& pqcnx(const char* dsn = nullptr) {
+        return mycnx(dsn).conn;
+    }
+    void commit_work(){
+        mycnx().pwork->commit();
+        mycnx().pwork = std::make_unique<pqxx::work>(pqcnx());
+    }
+    pqxx::work& pqwork() {
+        static std::size_t works_done{};
+        if ( ++works_done % 300 == 0 ) {
+            commit_work();
+        }
+        return *mycnx().pwork;
+    }
+
+    bool recentlySeen(long mac) {
+        static std::set<long> recent{};
+        if (recent.find(mac) != recent.end()) return true;
+        recent.insert(mac);
+        return false;
+    }
+
+    void dbRegisterMacIfNew(pqxx::work& w, const long mac) {
+        if (recentlySeen(mac)) return;
+        char hexmac[20];
+        sprintf(hexmac, "%012lX", mac);
+        w.prepared("registerMac")
+                        (mac)
+                        (std::string(hexmac))
+                        (resolveMac(mac))
+                .exec();
+    }
+
+}
+
+
 void dbLogSession() {
-    pqxx::connection conn(Config::get().dbConnect.c_str());
-    pqxx::work work(conn);
+    pqcnx(Config::get().dbConnect.c_str());
+    auto& work = pqwork();
     // Todo: insert values from config
-    conn.prepare("session", "INSERT INTO sessions (period, name, location, start_time) VALUES "
-            "($1, 'default', 'home', localtimestamp) RETURNING session_id;");
     pqxx::result r = work.prepared("session")
                     (Config::get().periodLength)
             .exec();
     pqxx::from_string(r[0][0], Config::get().currentSessionId);
-    work.commit();
 }
 
 void dbLogPeriod(const Summary& summary) {
     long periodId = -1;
-    pqxx::connection conn(Config::get().dbConnect.c_str());
-    pqxx::work work(conn);
-    conn.prepare("periods",
-                 "INSERT INTO periods (session_id, end_time, no_pkts_valid, no_pkts_corr, bytes_valid, bytes_corr, no_stations) "
-                         "VALUES ($1, to_timestamp($2), $3, $4, $5, $6, $7) RETURNING period_id;");
+    auto& work = pqwork();
 
     pqxx::result r = work.prepared("periods")
                     (Config::get().currentSessionId)
@@ -211,11 +271,8 @@ void dbLogPeriod(const Summary& summary) {
             .exec();
     pqxx::from_string(r[0][0], periodId);
 
-    conn.prepare("summaries", "INSERT INTO summaries (period_id, mac_int, mac_res, no_pkts, no_bytes) "
-            "VALUES ($1, $2, $3, $4, $5);");
-
     for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
-        dbRegisterMacIfNew(ptr->first);
+        dbRegisterMacIfNew(work, ptr->first);
         work.prepared("summaries")
                         (periodId)
                         (ptr->first)
@@ -224,35 +281,12 @@ void dbLogPeriod(const Summary& summary) {
                         (ptr->second.bytes)
                 .exec();
     }
-
-    work.commit();
+    commit_work();
 }
 
 
-bool recentlySeen(long mac) {
-    static std::set<long> recent{};
-    if (recent.find(mac) != recent.end()) return true;
-    recent.insert(mac);
-    return false;
-}
 
 
-void dbRegisterMacIfNew(const long mac) {
-    if (recentlySeen(mac)) return;
-    pqxx::connection conn(Config::get().dbConnect.c_str());
-    pqxx::work work(conn);
-    char hexmac[20];
-    sprintf(hexmac, "%012lX", mac);
-    conn.prepare("registerMac",
-                 "INSERT INTO macs (mac_int, mac_hex, mac_res) "
-                         "VALUES ($1, $2, $3) ON CONFLICT (mac_int) DO NOTHING;");
-    work.prepared("registerMac")
-                    (mac)
-                    (std::string(hexmac))
-                    (resolveMac(mac))
-            .exec();
-    work.commit();
-}
 
 char* timeStampFromPkt(const Packet& pkt, char* timeStamp) {
     t_point pkt_t_point = t_point();
@@ -280,8 +314,8 @@ void getAddresses(const Packet& pkt, int macPktLength, std::string& addr1, std::
 }
 
 void dbLogPacket(const Packet& pkt) {
-    pqxx::connection conn(Config::get().dbConnect.c_str());
-    pqxx::work work(conn);
+    auto& work = pqwork();
+
     long addr1{NULL};
     long addr2{NULL};
     long addr3{NULL};
@@ -291,21 +325,18 @@ void dbLogPacket(const Packet& pkt) {
     if (pkt.crc) {
         if (macPktLength >= 14) {
             addr1 = addressToLong(pkt.macHeader->addr1);
-            dbRegisterMacIfNew(addr1);
+            dbRegisterMacIfNew(work, addr1);
         }
         if (macPktLength >= 20) {
             addr2 = addressToLong(pkt.macHeader->addr2);
-            dbRegisterMacIfNew(addr1);
+            dbRegisterMacIfNew(work, addr1);
         }
         if (macPktLength >= 26) {
             addr3 = addressToLong(pkt.macHeader->addr3);
-            dbRegisterMacIfNew(addr1);
+            dbRegisterMacIfNew(work, addr1);
         }
     }
 
-    conn.prepare("packet", "INSERT INTO packets (session_id, time_stamp, protocol, type, subtype, "
-            "to_from_ds, crc_valid, length, addr1, addr2, addr3, channel_freq) VALUES "
-            "($1, to_timestamp($2), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);");
     work.prepared("packet")
                     (Config::get().currentSessionId)
                     (timeStamp)
@@ -320,6 +351,5 @@ void dbLogPacket(const Packet& pkt) {
                     (addr3)
                     (pkt.radioTapHeader->channelFreq)
             .exec();
-    work.commit();
 }
 
