@@ -6,7 +6,7 @@ d8:3c:69:c1:88:81	NIM_Wiko
 6c:71:d9:4b:75:f1	NEMA_Yogi
 28:fa:a0:c7:6b:80	NIM_Vivo
 f0:6b:ca:2a:00:14	TOM_TabS8  
-08:ec:a9:ce:83:b0	TOM_TabS9  
+08:ec:a9:ce:83:b0	TOM_TabS9
 04:0c:ce:dd:e9:f2	TOM_Air
 f4:09:d8:78:fc:7e	TOM_Alpha
 50:cc:f8:2a:f7:0e	TOM_Sam

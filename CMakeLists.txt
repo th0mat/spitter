@@ -1,12 +1,9 @@
-
-
 cmake_minimum_required(VERSION 3.4)
 project(spitter)
 
 # not required if find_package is used
 link_directories(/usr/local/lib/)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -lpcap -I/usr/local/include/ -lpqxx -lpq -lgtest")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -I/usr/local/include/")
 
 set(SOURCE_FILES macchina/spitter.cpp macchina/spitter.h mac2oui/lookup.cpp mac2oui/lookup.h

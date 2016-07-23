@@ -40,6 +40,27 @@ void screenPrintPeriodDetails(const Summary& summary) {
     std::cout << "\n";
 }
 
+
+void screenPrintPeriodJSON(const Summary& summary) {
+//    char timeStamp[100];
+    std::string json = "{ ";
+//    time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;
+//    std::strftime(timeStamp, sizeof(timeStamp), "%Y-%m-%d %H:%M.%S", std::localtime(&tt));
+    for (auto ptr = summary.stations.begin(); ptr != summary.stations.end(); ptr++) {
+        json += '"';
+        json += resolveMac(ptr->first);
+        json += '"';
+        json += " : ";
+        json += std::to_string(ptr->second.bytes);
+        json += ", ";
+    }
+    json = json.substr(0, json.length() - 2);
+    json += " }\n";
+    std::cout << json;
+}
+
+
+
 void screenPrintPeriodHeader(const Summary& summary) {
     char timeStamp[100];
     time_t tt = summary.periodEnd.time_since_epoch().count() / 1000000;

@@ -18,6 +18,7 @@ void packetHandler(const Packet& pkt) {
 void summaryHandler(const Summary& summary) {
     if (Config::get().outScrPeriodHdr) screenPrintPeriodHeader(summary);
     if (Config::get().outScrPeriodDetails) screenPrintPeriodDetails(summary);
+    if (Config::get().outScrPeriodJSON) screenPrintPeriodJSON(summary);
     if (Config::get().outTxtPeriods) {
         txtLogPeriodHeader(summary);
         txtLogPeriodDetails(summary);

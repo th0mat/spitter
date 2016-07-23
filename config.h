@@ -32,6 +32,7 @@ public:
     bool outScrPkts;
     bool outScrPeriodHdr;
     bool outScrPeriodDetails;
+    bool outScrPeriodJSON;
     bool outTxtPkts;
     bool outTxtPeriods;
     std::string outTxtDir;

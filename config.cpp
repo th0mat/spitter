@@ -26,6 +26,7 @@ Config::Config() {
     outScrPkts = pt.get<bool>("output.screen.packets");
     outScrPeriodHdr = pt.get<bool>("output.screen.period_header");
     outScrPeriodDetails = pt.get<bool>("output.screen.period_details");
+    outScrPeriodJSON = pt.get<bool>("output.screen.period_JSON");
     outTxtPkts = pt.get<bool>("output.log_file.packets");
     outTxtPeriods = pt.get<bool>("output.log_file.packets");
     outTxtDir = pt.get<std::string>("output.log_file.dir");

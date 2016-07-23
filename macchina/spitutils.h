@@ -16,6 +16,7 @@ void txtLogPeriodHeader(const Summary&);
 void txtLogPacket(const Packet&);
 
 void screenPrintPeriodDetails(const Summary&);
+void screenPrintPeriodJSON(const Summary&);
 void screenPrintPeriodHeader(const Summary&);
 void screenPrintPacket(const Packet&);
 
